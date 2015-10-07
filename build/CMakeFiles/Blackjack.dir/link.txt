@@ -1,0 +1,1 @@
+/usr/bin/avr-g++   -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD  -w -Os -Wl,--gc-sections -mmcu=atmega328p  CMakeFiles/Blackjack.dir/Blackjack_Blackjack.ino.cpp.obj  -o Blackjack.elf  libuno_LiquidCrystal.a libuno_EEPROM.a libuno_CORE.a -lc -lm 

@@ -1,0 +1,7 @@
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/Blackjack.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/uno_CORE.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/Blackjack-size.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/uno_EEPROM.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/uno_LiquidCrystal.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/upload.dir
+/home/ben/ClionProjects/Blackjack/build/CMakeFiles/Blackjack-upload.dir

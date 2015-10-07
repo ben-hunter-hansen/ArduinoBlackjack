@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+0d1286d3d2b56cec47b79112a1372d25 Blackjack_Blackjack.ino.cpp
+5f564b8040552d8e93c25e5979bb0f6a CMakeFiles/Blackjack-size
+cc5d270d59534ae9c905baad83badd4e CMakeFiles/Blackjack-upload

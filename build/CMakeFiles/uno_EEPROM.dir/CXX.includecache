@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/usr/share/arduino/libraries/EEPROM/EEPROM.cpp
+avr/eeprom.h
+-
+Arduino.h
+/usr/share/arduino/libraries/EEPROM/Arduino.h
+EEPROM.h
+/usr/share/arduino/libraries/EEPROM/EEPROM.h
+
+/usr/share/arduino/libraries/EEPROM/EEPROM.h
+inttypes.h
+-
+

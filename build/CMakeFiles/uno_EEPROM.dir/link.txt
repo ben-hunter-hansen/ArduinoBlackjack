@@ -1,0 +1,2 @@
+/usr/bin/avr-ar cq libuno_EEPROM.a  CMakeFiles/uno_EEPROM.dir/usr/share/arduino/libraries/EEPROM/EEPROM.cpp.obj
+/usr/bin/avr-ranlib libuno_EEPROM.a
