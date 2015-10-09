@@ -10,14 +10,20 @@
 //=== START Forward: /home/ben/ClionProjects/Blackjack/Blackjack.ino
  int cardCount(char *cards) ;
  int cardCount(char *cards) ;
- void printCards(char *cards, unsigned int row, unsigned int col) ;
- void printCards(char *cards, unsigned int row, unsigned int col) ;
- void printCards(char card, unsigned int row, unsigned int col) ;
- void printCards(char card, unsigned int row, unsigned int col) ;
- void drawHand(char *hand, char *deck) ;
- void drawHand(char *hand, char *deck) ;
+ void printCards(char *cards, unsigned int row, unsigned int col, bool faceDown) ;
+ void printCards(char *cards, unsigned int row, unsigned int col, bool faceDown) ;
+ void drawHand(char *hand, char *deck, int *deckPointer) ;
+ void drawHand(char *hand, char *deck, int *deckPointer) ;
+ void drawCard(char *hand, char *deck, int *deckPointer) ;
+ void drawCard(char *hand, char *deck, int *deckPointer) ;
  int getButton() ;
  int getButton() ;
+ int computeScore(char *hand) ;
+ int computeScore(char *hand) ;
+ int hit(char *hand, char *deck, int *deckPointer) ;
+ int hit(char *hand, char *deck, int *deckPointer) ;
+ int stay(char *dealerHand, char *deck, int *deckPointer) ;
+ int stay(char *dealerHand, char *deck, int *deckPointer) ;
  void setup() ;
  void setup() ;
  void loop() ;
@@ -35,6 +41,9 @@ typedef enum BUTTON {
     SELECT_BTN
 } Button;
 
+const int BLACKJACK = 21;
+const int BUST = -1;
+
 const char CARDS[] = {
         'A', '2', '3', '4', '5',
         '6', '7', '8', '9', 'T',
@@ -42,7 +51,7 @@ const char CARDS[] = {
 };
 
 const int DECK_SIZE = 52;
-const int HAND_SIZE = 4; // This may need to be raised
+const int HAND_SIZE = 6; // This may need to be raised
 
 const byte RNG_SEED_PIN = A2;
 
@@ -52,7 +61,7 @@ int sensorValue;
 /*
  *  Shuffles a deck by iterating over it,
  *  and swapping each card with a random index between
- *  0 and DECK_SIZE - 1 inclusive.
+ *  0 (inclusive) and DECK_SIZE (exclusive).
  */
 void shuffle(char deck[DECK_SIZE]) {
     for(int i = 0; i < DECK_SIZE; i++) {
@@ -80,30 +89,24 @@ int cardCount(char *cards) {
  *  Pretty prints the cards,
  *  starting at a specific row and column
  */
-void printCards(char *cards, unsigned int row, unsigned int col) {
+void printCards(char *cards, unsigned int row, unsigned int col, bool faceDown) {
 
+    lcd.setCursor(col,row);
+
+    lcd.print("                ");
     lcd.setCursor(col,row);
     for(int i = 0; i < cardCount(cards); i++) {
-
-        if(cards[i] == 'T') {
-            lcd.print("10|");
+        if(!faceDown || i < 1) {
+            if(cards[i] == 'T') {
+                lcd.print("10|");
+            } else {
+                lcd.print(" ");
+                lcd.print(cards[i]);
+                lcd.print("|");
+            }
         } else {
-            lcd.print(" ");
-            lcd.print(cards[i]);
-            lcd.print("|");
+          lcd.print(" ?|");
         }
-    }
-}
-/*
- *  Pretty prints a card
- */
-void printCards(char card, unsigned int row, unsigned int col) {
-    lcd.setCursor(col,row);
-    if(card == 'T') {
-        lcd.print("10|");
-    } else {
-        lcd.print(card);
-        lcd.print(" |");
     }
 }
 
@@ -113,10 +116,11 @@ void printCards(char card, unsigned int row, unsigned int col) {
  *  card.  This also re sizes the deck.
  */
 void shiftDeck(char deck[DECK_SIZE], int drawn) {
-    for(int i = drawn; i < DECK_SIZE; i++) {
-        deck[i - drawn] = deck[i];
-        deck[i] = 0;
+    int deckSize = cardCount(deck);
+    for(int i = 0; i < deckSize; i++) {
+       deck[i] = deck[i + drawn];
     }
+    deck[deckSize] = 0;
 }
 
 
@@ -139,18 +143,45 @@ void generateDeck(char deck[DECK_SIZE]) {
 /*
  *  Draws a two card hand from the deck.
  */
-void drawHand(char *hand, char *deck) {
-    if(deck[0] == 0) {
-        generateDeck(deck);
+void drawHand(char *hand, char *deck, int *deckPointer) {
+    if(*deckPointer >= DECK_SIZE - 1) {
+        shuffle(deck);
+        *deckPointer = 0;
     }
 
-    hand[0] = deck[0];
-    hand[1] = deck[1];
+
+    hand[0] = deck[*deckPointer];
+    hand[1] = deck[*deckPointer + 1];
     hand[2] = '\0';
 
-    shiftDeck(deck, 2); // Issued two cards from the top, ensure two more take their place
+    *deckPointer += 2;
 }
 
+/*
+ *  Draws a card from the deck
+ */
+void drawCard(char *hand, char *deck, int *deckPointer) {
+
+    if(cardCount(hand) >= HAND_SIZE - 1) {
+        return;
+    }
+
+    if(*deckPointer >= DECK_SIZE - 1) {
+        *deckPointer = 0;
+    }
+
+    int handLen = cardCount(hand);
+    hand[handLen] = deck[*deckPointer];
+    hand[handLen + 1] = '\0';
+    ++*deckPointer;
+
+    shuffle(deck);
+}
+
+/*
+ *  Checks for a button press, returns the button
+ *  if one is detected else NO_BTN
+ */
 int getButton() {
     const int FUDGE = 5;
     int value = analogRead(A0);
@@ -171,24 +202,84 @@ int getButton() {
     return button;
 }
 
+int computeScore(char *hand) {
+    int score = 0, aceCount = 0;
+    for(int i = 0; i < cardCount(hand); i++) {
+        if(hand[i] == 'T' || hand[i] == 'J' || hand[i] == 'Q' || hand[i] == 'K') {
+            score += 10;
+        } else if(hand[i] == 'A') {
+            aceCount++;
+        } else {
+            score += hand[i]-'0';
+        }
+    }
+
+    if(aceCount) {
+        for(int i = 0; i < aceCount; i++) {
+            if(aceCount > 1 || score > 10) {
+                score++;
+            } else {
+                score += 11;
+            }
+        }
+    }
+
+    return score;
+}
+
+
+int hit(char *hand, char *deck, int *deckPointer) {
+    drawCard(hand,deck,deckPointer);
+}
+
+int stay(char *dealerHand, char *deck, int *deckPointer) {
+    printCards(dealerHand,0,0,false);
+
+    int dealerScore = computeScore(dealerHand);
+    if(dealerScore >= 16) { // Don't have the dealer try to hit on 16 or up
+        return dealerScore;
+    }
+
+    while(true) {
+        drawCard(dealerHand,deck, deckPointer);
+        dealerScore = computeScore(dealerHand);
+        printCards(dealerHand,0,0,false);
+        if(dealerScore > 21) {
+            dealerScore = BUST;
+            break;
+        } else if(dealerScore == 21) {
+            dealerScore = BLACKJACK;
+            break;
+        } else if(dealerScore >= 16) {
+            break;
+        }
+    }
+
+    return dealerScore;
+}
+
 void setup() {
     lcd.begin(16, 2);
     Serial.begin(9600);
     pinMode(10,OUTPUT);
     digitalWrite(10, HIGH);
 
-    randomSeed(analogRead(RNG_SEED_PIN));
+    randomSeed(analogRead(RNG_SEED_PIN)); // Seed the PRNG with analog noise from A2
 }
 
 void loop() {
     static char deck[DECK_SIZE];
+    static char dealerHand[HAND_SIZE];
     static char hand[HAND_SIZE];
-    static int handsDealt = 0;
+    static int deckPointer = 0;
+
     static bool first = true;
+    static bool checkForWinner = false;
 
     if(first) {
         generateDeck(deck);
-        drawHand(hand,deck);
+        drawHand(hand,deck, &deckPointer);
+        drawHand(dealerHand, deck, &deckPointer);
         first = false;
     }
 
@@ -198,24 +289,33 @@ void loop() {
 
         switch (button) {
             case UP_BTN:
+                hit(hand,deck, &deckPointer);
                 break;
             case DOWN_BTN:
-                drawHand(hand,deck);
-                ++handsDealt;
-                lcd.setCursor(0,0);
-                lcd.print(handsDealt);
+                stay(dealerHand,deck, &deckPointer);
+                checkForWinner = true;
                 break;
             case LEFT_BTN:
                 break;
             case RIGHT_BTN:
                 break;
-            case SELECT_BTN:;
+            case SELECT_BTN:
+                shuffle(deck);
+                drawHand(dealerHand, deck, &deckPointer);
+                drawHand(hand,deck, &deckPointer);
+                checkForWinner = false;
                 break;
             default:
                 break;
         }
     }
 
-    printCards(hand,1,0);
+    if(!checkForWinner) { // Print second dealer card face down during the players turn
+        printCards(dealerHand,0,0,true);
+    }
+
+    printCards(hand,1,0, false);
+    lcd.setCursor(14, 0);
+    lcd.print(computeScore(hand));
     delay(100);
 }
