@@ -56,9 +56,9 @@ CMAKE_BINARY_DIR = /home/ben/ClionProjects/Blackjack/build
 # Target rules for target CMakeFiles/Blackjack.dir
 
 # All Build rule for target.
-CMakeFiles/Blackjack.dir/all: CMakeFiles/uno_LiquidCrystal.dir/all
-CMakeFiles/Blackjack.dir/all: CMakeFiles/uno_EEPROM.dir/all
 CMakeFiles/Blackjack.dir/all: CMakeFiles/uno_CORE.dir/all
+CMakeFiles/Blackjack.dir/all: CMakeFiles/uno_EEPROM.dir/all
+CMakeFiles/Blackjack.dir/all: CMakeFiles/uno_LiquidCrystal.dir/all
 	$(MAKE) -f CMakeFiles/Blackjack.dir/build.make CMakeFiles/Blackjack.dir/depend
 	$(MAKE) -f CMakeFiles/Blackjack.dir/build.make CMakeFiles/Blackjack.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ben/ClionProjects/Blackjack/build/CMakeFiles  1 2
